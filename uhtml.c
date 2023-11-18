@@ -3,6 +3,7 @@
 #include <string.h>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include "uhtml.h"
 
 typedef struct Node {
     char* tag;
@@ -140,67 +141,3 @@ void freeDOM(Node* node) {
     free(node);
 }
 
-int main() {
-    char html[] = "<html><head><title>Sample</title></head><body><h1 style=\"color: red; x: 50; y: 50;\">Hello, World!</h1></body></html>";
-
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        fprintf(stderr, "SDL initialization failed: %s\n", SDL_GetError());
-        return 1;
-    }
-
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-
-    if (SDL_CreateWindowAndRenderer(800, 600, 0, &window, &renderer) < 0) {
-        fprintf(stderr, "Window creation failed: %s\n", SDL_GetError());
-        SDL_Quit();
-        return 1;
-    }
-
-    TTF_Init();
-    TTF_Font* font = TTF_OpenFont("path_to_your_font.ttf", 24);  // Replace with the path to a TTF font
-
-    if (!font) {
-        fprintf(stderr, "Failed to load font: %s\n", TTF_GetError());
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return 1;
-    }
-
-    Node* domTree = parseHTML(html);
-
-    // Apply styling to set initial positions
-    applyStyles(domTree);
-
-    SDL_Event e;
-    int quit = 0;
-
-    while (!quit) {
-        SDL_PollEvent(&e);
-
-        switch (e.type) {
-            case SDL_QUIT:
-                quit = 1;
-                break;
-        }
-
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
-
-        // Render the DOM
-        renderDOM(renderer, font, domTree);
-
-        SDL_RenderPresent(renderer);
-    }
-
-    // Free resources
-    freeDOM(domTree);
-    TTF_CloseFont(font);
-    TTF_Quit();
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-
-    return 0;
-}
